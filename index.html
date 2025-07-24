@@ -1,28 +1,114 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Saba Game</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #ffeaf4;
-      font-family: sans-serif;
-    }
-    canvas {
-      display: block;
-      margin: auto;
-      background: #fff0f5;
-      border: 2px solid #f06292;
-      border-radius: 12px;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="gameCanvas" width="300" height="500"></canvas>
-  <script src="script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saba Game</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #ffeaf4;
+        font-family: sans-serif;
+      }
+      canvas {
+        display: block;
+        margin: auto;
+        background: #fff0f5;
+        border: 2px solid #f06292;
+        border-radius: 12px;
+        touch-action: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="300" height="500"></canvas>
+    <script>
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+
+      const pad = {
+        x: canvas.width / 2 - 25,
+        y: canvas.height - 50,
+        width: 50,
+        height: 20,
+        speed: 5,
+      };
+
+      const drop = {
+        x: Math.random() * (canvas.width - 20),
+        y: 0,
+        radius: 10,
+        speed: 2,
+      };
+
+      let leftPressed = false;
+      let rightPressed = false;
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") leftPressed = true;
+        if (e.key === "ArrowRight") rightPressed = true;
+      });
+
+      document.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowLeft") leftPressed = false;
+        if (e.key === "ArrowRight") rightPressed = false;
+      });
+
+      canvas.addEventListener("touchmove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const touchX = e.touches[0].clientX - rect.left;
+        pad.x = touchX - pad.width / 2;
+        if (pad.x < 0) pad.x = 0;
+        if (pad.x + pad.width > canvas.width) pad.x = canvas.width - pad.width;
+      });
+
+      function drawPad() {
+        ctx.fillStyle = "#ec407a";
+        ctx.fillRect(pad.x, pad.y, pad.width, pad.height);
+      }
+
+      function drawDrop() {
+        ctx.beginPath();
+        ctx.arc(drop.x, drop.y, drop.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#d32f2f";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      function update() {
+        if (leftPressed) pad.x -= pad.speed;
+        if (rightPressed) pad.x += pad.speed;
+
+        if (pad.x < 0) pad.x = 0;
+        if (pad.x + pad.width > canvas.width) pad.x = canvas.width - pad.width;
+
+        drop.y += drop.speed;
+
+        if (
+          drop.y + drop.radius > pad.y &&
+          drop.x > pad.x &&
+          drop.x < pad.x + pad.width
+        ) {
+          drop.y = 0;
+          drop.x = Math.random() * (canvas.width - 20);
+        }
+
+        if (drop.y > canvas.height) {
+          drop.y = 0;
+          drop.x = Math.random() * (canvas.width - 20);
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPad();
+        drawDrop();
+        update();
+        requestAnimationFrame(draw);
+      }
+
+      draw();
+    </script>
+  </body>
 </html>
